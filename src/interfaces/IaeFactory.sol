@@ -1,7 +1,12 @@
 pragma solidity =0.8.19;
 
-interface IUniswapV2Factory {
+interface IaeFactory {
     event PairCreated(address indexed token0, address indexed token1, address pair, uint);
+
+    error IdenticAddresses();
+    error ZeroAddress();
+    error PairExists();
+    error Forbidden();
 
     function feeTo() external view returns (address);
     function feeToSetter() external view returns (address);
