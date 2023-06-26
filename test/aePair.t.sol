@@ -42,12 +42,35 @@ contract aePairTest is Test {
     assertEq(aepair.totalSupply(), 5000);
     assertEq(mockToken1.balanceOf(pair1), 5000);
     assertEq(mockToken2.balanceOf(pair1), 5000);
+
+    vm.stopPrank();
   }
 
   function testSwap() public {
     testMint();
 
-    vm.prank(bob);
-    aepair.swap(amount0Out, amount1Out, to, data);
+    vm.startPrank(bob);
+    mockToken1.transfer(pair1, 3500);
+
+    aepair.swap(0, 2000, bob, "");
+
+    assertEq(mockToken1.balanceOf(bob), 0);
+    assertEq(mockToken2.balanceOf(bob), 2000);
+    assertEq(mockToken1.balanceOf(pair1), 8500);
+    assertEq(mockToken2.balanceOf(pair1), 3000);
+
+    vm.stopPrank();
+  }
+
+  function testBurn() public {
+    testSwap();
+
+    vm.startPrank(admin);
+    aepair.transfer(pair1, 4000);
+
+    aepair.burn(admin);
+
+    assertEq(mockToken1.balanceOf(bob), 0);
+    assertEq(mockToken2.balanceOf(bob), 2000);
   }
 }
