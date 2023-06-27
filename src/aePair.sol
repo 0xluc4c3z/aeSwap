@@ -2,19 +2,17 @@
 pragma solidity =0.8.19;
 
 import './interfaces/IaePair.sol';
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import 'solmate/src/tokens/ERC20.sol';
-import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import {SafeTransferLib, ERC20} from "solmate/src/utils/SafeTransferLib.sol";
 import 'solmate/src/utils/ReentrancyGuard.sol';
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import './libraries/UQ112x112.sol';
 import './interfaces/IaeCallee.sol';
 
 contract aePair is ERC20, IaePair, ReentrancyGuard {
-    using SafeERC20 for IERC20;
+    using SafeTransferLib for ERC20;
     using UQ112x112 for uint224;
 
-    uint public constant MINIMUM_LIQUIDITY = 10**3;
+    uint256 public constant MINIMUM_LIQUIDITY = 10**3;
 
     address public factory;
     address public token0;
@@ -24,9 +22,9 @@ contract aePair is ERC20, IaePair, ReentrancyGuard {
     uint112 private reserve1;           // uses single storage slot, accessible via getReserves
     uint32  private blockTimestampLast; // uses single storage slot, accessible via getReserves
 
-    uint public price0CumulativeLast;
-    uint public price1CumulativeLast;
-    uint public kLast; // reserve0 * reserve1, as of immediately after the most recent liquidity event
+    uint256 public price0CumulativeLast;
+    uint256 public price1CumulativeLast;
+    uint256 public kLast; // reserve0 * reserve1, as of immediately after the most recent liquidity event
 
 
     constructor() ERC20('aeToken', 'ae', 18) {
@@ -44,8 +42,8 @@ contract aePair is ERC20, IaePair, ReentrancyGuard {
     
     function mint(address to) external nonReentrant returns (uint256 liquidity) {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves(); // gas savings
-        uint256 balance0 = IERC20(token0).balanceOf(address(this));
-        uint256 balance1 = IERC20(token1).balanceOf(address(this));
+        uint256 balance0 = ERC20(token0).balanceOf(address(this));
+        uint256 balance1 = ERC20(token1).balanceOf(address(this));
         uint256 amount0 = balance0 - _reserve0;
         uint256 amount1 = balance1 - _reserve1;
 
@@ -70,15 +68,13 @@ contract aePair is ERC20, IaePair, ReentrancyGuard {
     }
 
     
-    function burn(address to) 
-        external nonReentrant 
-        returns (uint256 amount0, uint256 amount1) 
+    function burn(address to) external nonReentrant returns (uint256 amount0, uint256 amount1) 
     {
         address _token0 = token0;                               
         address _token1 = token1;                    
 
-        uint256 balance0 = IERC20(_token0).balanceOf(address(this));
-        uint256 balance1 = IERC20(_token1).balanceOf(address(this));
+        uint256 balance0 = ERC20(_token0).balanceOf(address(this));
+        uint256 balance1 = ERC20(_token1).balanceOf(address(this));
         uint256 liquidity = balanceOf[address(this)];
 
         uint256 _totalSupply = totalSupply; 
@@ -89,11 +85,11 @@ contract aePair is ERC20, IaePair, ReentrancyGuard {
 
         _burn(address(this), liquidity);
 
-        IERC20(_token0).safeTransfer(to, amount0);
-        IERC20(_token1).safeTransfer(to, amount1);
+        ERC20(_token0).safeTransfer(to, amount0);
+        ERC20(_token1).safeTransfer(to, amount1);
 
-        balance0 = IERC20(_token0).balanceOf(address(this));
-        balance1 = IERC20(_token1).balanceOf(address(this));
+        balance0 = ERC20(_token0).balanceOf(address(this));
+        balance1 = ERC20(_token1).balanceOf(address(this));
 
         (uint112 _reserve0, uint112 _reserve1,) = getReserves(); 
         _update(balance0, balance1, _reserve0, _reserve1);
@@ -118,8 +114,8 @@ contract aePair is ERC20, IaePair, ReentrancyGuard {
 
         if (to == token0 || to == token1) revert InvalidTo();
 
-        if (amount0Out > 0) IERC20(token0).safeTransfer(to, amount0Out); 
-        if (amount1Out > 0) IERC20(token1).safeTransfer(to, amount1Out); 
+        if (amount0Out > 0) ERC20(token0).safeTransfer(to, amount0Out); 
+        if (amount1Out > 0) ERC20(token1).safeTransfer(to, amount1Out); 
         if (data.length > 0) 
             IaeCallee(to).aeCall(
                 msg.sender, 
@@ -128,8 +124,8 @@ contract aePair is ERC20, IaePair, ReentrancyGuard {
                 data
             );
 
-        uint256 balance0 = IERC20(token0).balanceOf(address(this));
-        uint256 balance1 = IERC20(token1).balanceOf(address(this));
+        uint256 balance0 = ERC20(token0).balanceOf(address(this));
+        uint256 balance1 = ERC20(token1).balanceOf(address(this));
        
         uint256 amount0In = balance0 > _reserve0 - amount0Out
             ? balance0 - (_reserve0 - amount0Out) 
@@ -147,7 +143,6 @@ contract aePair is ERC20, IaePair, ReentrancyGuard {
             uint256(_reserve0) * uint256(_reserve1) * (1000**2)
         ) revert InvalidK();
         
-
         _update(balance0, balance1, _reserve0, _reserve1);
         
         emit Swap(msg.sender, amount0Out, amount1Out, to);
@@ -157,15 +152,15 @@ contract aePair is ERC20, IaePair, ReentrancyGuard {
     function skim(address to) external nonReentrant {
         address _token0 = token0; // gas savings
         address _token1 = token1; // gas savings
-        IERC20(_token0).safeTransfer(to, IERC20(_token0).balanceOf(address(this)) - reserve0);
-        IERC20(_token1).safeTransfer(to, IERC20(_token1).balanceOf(address(this)) - reserve1);
+        ERC20(_token0).safeTransfer(to, ERC20(_token0).balanceOf(address(this)) - reserve0);
+        ERC20(_token1).safeTransfer(to, ERC20(_token1).balanceOf(address(this)) - reserve1);
     }
 
     
     function sync() external nonReentrant {
         _update(
-            IERC20(token0).balanceOf(address(this)), 
-            IERC20(token1).balanceOf(address(this)), 
+            ERC20(token0).balanceOf(address(this)), 
+            ERC20(token1).balanceOf(address(this)), 
             reserve0, 
             reserve1
         );

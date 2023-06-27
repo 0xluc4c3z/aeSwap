@@ -13,7 +13,8 @@ contract aePairTest is Test {
   aePair public aepair;
 
   address public admin = address(64);
-  address public bob = address(128);
+  address public alice = address(128);
+  address public bob = address(256);
 
   address public pair1;
   uint256 public constant AMOUNT = 5000;
@@ -23,8 +24,11 @@ contract aePairTest is Test {
     mockToken1 = new MockToken("TestToken1", "TT1", 18, admin);
     mockToken2 = new MockToken("TestToken2", "TT2", 18, admin);
 
-    vm.prank(admin);
+    vm.startPrank(admin);
+    mockToken1.transfer(alice, AMOUNT);
+    mockToken2.transfer(alice, AMOUNT);
     mockToken1.transfer(bob, 3500);
+    vm.stopPrank();
 
     pair1 = aefactory.createPair(address(mockToken1), address(mockToken2));
 
@@ -32,22 +36,28 @@ contract aePairTest is Test {
   }
 
   function testMint() public {
-    vm.startPrank(admin);
+    assertEq(mockToken1.balanceOf(alice), 5000);
+    assertEq(mockToken2.balanceOf(alice), 5000);
+
+    vm.startPrank(alice);
     mockToken1.transfer(pair1, AMOUNT);
     mockToken2.transfer(pair1, AMOUNT);
 
-    aepair.mint(admin);
+    aepair.mint(alice);
     
-    assertEq(aepair.balanceOf(admin), 4000);
+    assertEq(aepair.balanceOf(alice), 4000);
     assertEq(aepair.totalSupply(), 5000);
-    assertEq(mockToken1.balanceOf(pair1), 5000);
-    assertEq(mockToken2.balanceOf(pair1), 5000);
+    assertEq(mockToken1.balanceOf(alice), 0);
+    assertEq(mockToken2.balanceOf(alice), 0);
 
     vm.stopPrank();
   }
 
   function testSwap() public {
     testMint();
+
+    assertEq(mockToken1.balanceOf(bob), 3500);
+    assertEq(mockToken2.balanceOf(bob), 0); 
 
     vm.startPrank(bob);
     mockToken1.transfer(pair1, 3500);
@@ -65,12 +75,23 @@ contract aePairTest is Test {
   function testBurn() public {
     testSwap();
 
-    vm.startPrank(admin);
+    assertEq(mockToken1.balanceOf(alice), 0);
+    assertEq(mockToken2.balanceOf(alice), 0);
+    assertEq(aepair.balanceOf(alice), 4000);
+
+    assertEq(mockToken1.balanceOf(pair1), 8500);
+    assertEq(mockToken2.balanceOf(pair1), 3000);
+
+    vm.startPrank(alice);
     aepair.transfer(pair1, 4000);
 
-    aepair.burn(admin);
+    aepair.burn(alice);
 
-    assertEq(mockToken1.balanceOf(bob), 0);
-    assertEq(mockToken2.balanceOf(bob), 2000);
+    assertEq(mockToken1.balanceOf(alice), 6800);
+    assertEq(mockToken2.balanceOf(alice), 2400);
+    assertEq(aepair.balanceOf(alice), 0);
+
+    assertEq(mockToken1.balanceOf(pair1), 1700);
+    assertEq(mockToken2.balanceOf(pair1), 600);
   }
 }
