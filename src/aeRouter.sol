@@ -6,6 +6,7 @@ import './interfaces/IaeFactory.sol';
 import './interfaces/IaePair.sol';
 import './interfaces/IWETH.sol';
 import './libraries/aeLibrary.sol';
+import './types/DataTypes.sol';
 import {SafeTransferLib, ERC20} from "solmate/src/utils/SafeTransferLib.sol";
 
 contract aeRouter is IaeRouter {
@@ -30,29 +31,24 @@ contract aeRouter is IaeRouter {
     }
 
     function _addLiquidity(
-        address tokenA,
-        address tokenB,
-        uint256 amountADesired,
-        uint256 amountBDesired,
-        uint256 amountAMin,
-        uint256 amountBMin
+        DataTypes.ExecuteLiquidityParams memory params
     ) private returns (uint256 amountA, uint256 amountB) {
-        if (IaeFactory(factory).getPair(tokenA, tokenB) == address(0)) {
-            IaeFactory(factory).createPair(tokenA, tokenB);
+        if (IaeFactory(factory).getPair(params.tokenA, params.tokenB) == address(0)) {
+            IaeFactory(factory).createPair(params.tokenA, params.tokenB);
         }
-        (uint256 reserveA, uint256 reserveB) = aeLibrary.getReserves(factory, tokenA, tokenB);
+        (uint256 reserveA, uint256 reserveB) = aeLibrary.getReserves(factory, params.tokenA, params.tokenB);
         if (reserveA == 0 && reserveB == 0) {
-            (amountA, amountB) = (amountADesired, amountBDesired);
+            (amountA, amountB) = (params.amountADesired, params.amountBDesired);
         } else {
-            uint256 amountBOptimal = aeLibrary.quote(amountADesired, reserveA, reserveB);
-            if (amountBOptimal <= amountBDesired) {
-                if (amountBOptimal < amountBMin) revert InsufficientBAmount();
-                (amountA, amountB) = (amountADesired, amountBOptimal);
+            uint256 amountBOptimal = aeLibrary.quote(params.amountADesired, reserveA, reserveB);
+            if (amountBOptimal <= params.amountBDesired) {
+                if (amountBOptimal < params.amountBMin) revert InsufficientBAmount();
+                (amountA, amountB) = (params.amountADesired, amountBOptimal);
             } else {
-                uint256 amountAOptimal = aeLibrary.quote(amountBDesired, reserveB, reserveA);
-                if (amountAOptimal > amountADesired) revert InsufficientAAmount();
-                if (amountAOptimal < amountAMin) revert InsufficientAAmount(); 
-                (amountA, amountB) = (amountAOptimal, amountBDesired);
+                uint256 amountAOptimal = aeLibrary.quote(params.amountBDesired, reserveB, reserveA);
+                if (amountAOptimal > params.amountADesired) revert InsufficientAAmount();
+                if (amountAOptimal < params.amountAMin) revert InsufficientAAmount(); 
+                (amountA, amountB) = (amountAOptimal, params.amountBDesired);
             }
         }
     }
@@ -67,9 +63,18 @@ contract aeRouter is IaeRouter {
         address to,
         uint256 deadline
     ) external override ensure(deadline) returns (uint256 amountA, uint256 amountB, uint256 liquidity) {
-        (amountA, amountB) = _addLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin);
+        (amountA, amountB) = _addLiquidity(
+            DataTypes.ExecuteLiquidityParams({
+                tokenA: tokenA,
+                tokenB: tokenB,
+                amountADesired: amountADesired,
+                amountBDesired: amountBDesired,
+                amountAMin: amountAMin,
+                amountBMin: amountBMin
+            })
+        );
         address pair = aeLibrary.pairFor(factory, tokenA, tokenB);
-        ERC20(tokenA).safeTransferFrom(msg.sender, pair, amountA);
+        ERC20(tokenA).transferFrom(msg.sender, pair, amountA);
         ERC20(tokenB).safeTransferFrom(msg.sender, pair, amountB);
         liquidity = IaePair(pair).mint(to);
     }
@@ -83,12 +88,14 @@ contract aeRouter is IaeRouter {
         uint256 deadline
     ) external override payable ensure(deadline) returns (uint256 amountToken, uint256 amountETH, uint256 liquidity) {
         (amountToken, amountETH) = _addLiquidity(
-            token,
-            WETH,
-            amountTokenDesired,
-            msg.value,
-            amountTokenMin,
-            amountETHMin
+            DataTypes.ExecuteLiquidityParams({
+                tokenA: token,
+                tokenB: WETH,
+                amountADesired: amountTokenDesired,
+                amountBDesired: msg.value,
+                amountAMin: amountTokenMin,
+                amountBMin: amountETHMin
+            })
         );
         address pair = aeLibrary.pairFor(factory, token, WETH);
         ERC20(token).safeTransferFrom(msg.sender, pair, amountToken);
