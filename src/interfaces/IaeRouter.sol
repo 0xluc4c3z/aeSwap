@@ -8,9 +8,12 @@ interface IaeRouter {
     error InsufficientBAmount();
     error InsufficientAAmount();
     error TransferFail();
+    error InsufficientOutputAmount();
+    error ExcessiveInputAmount();
+    error InvalidPath();
 
-    function factory() external pure returns (address);
-    function WETH() external pure returns (address);
+    function factory() external view returns (address);
+    function WETH() external view returns (address);
 
     function addLiquidity(
         address tokenA,
