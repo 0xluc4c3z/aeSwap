@@ -115,7 +115,7 @@ contract aeRouter is IaeRouter {
         uint256 deadline
     ) public override ensure(deadline) returns (uint256 amountA, uint256 amountB) {
         address pair = aeLibrary.pairFor(factory, tokenA, tokenB);
-        ERC20(pair).safeTransferFrom(msg.sender, pair, liquidity); // send liquidity to pair
+        ERC20(pair).transferFrom(msg.sender, pair, liquidity); // send liquidity to pair
         (uint amount0, uint amount1) = IaePair(pair).burn(to);
         (address token0,) = aeLibrary.sortTokens(tokenA, tokenB);
         (amountA, amountB) = tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
