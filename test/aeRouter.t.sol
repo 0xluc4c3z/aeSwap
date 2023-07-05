@@ -7,8 +7,12 @@ import "./utils/mock/MockToken.sol";
 import "../src/aePair.sol";
 import "../src/aeRouter.sol";
 import "solmate/src/tokens/WETH.sol";
+import {SafeTransferLib, ERC20} from "solmate/src/utils/SafeTransferLib.sol";
 
 contract aeRouterTest is Test {
+  using SafeTransferLib for ERC20;
+  using SafeTransferLib for address;
+
   aeFactory public aefactory;
   MockToken public mockToken1;
   MockToken public mockToken2;
@@ -34,19 +38,51 @@ contract aeRouterTest is Test {
     mockToken1.transfer(alice, AMOUNT);
     mockToken2.transfer(alice, AMOUNT);
     mockToken1.transfer(bob, 3500);
+    vm.deal(alice, 5000 wei);
     vm.stopPrank();
   } 
 
   function testAddLiquidity() public {
+    assertEq(mockToken1.balanceOf(alice), AMOUNT);
+    assertEq(mockToken2.balanceOf(alice), AMOUNT);
+
     vm.startPrank(alice);
 
-    mockToken1.approve(address(aerouter), AMOUNT);
-    mockToken2.approve(address(aerouter), AMOUNT);
+    ERC20(address(mockToken1)).safeApprove(address(aerouter), AMOUNT);
+    ERC20(address(mockToken2)).safeApprove(address(aerouter), AMOUNT);
 
-    aerouter.addLiquidity(address(mockToken1), address(mockToken2), AMOUNT, AMOUNT, 0, 0, alice, type(uint256).max);
+    (, , uint256 lps) = aerouter.addLiquidity(
+      address(mockToken1), address(mockToken2), 
+      AMOUNT, AMOUNT, 
+      0, 0, 
+      alice, type(uint256).max);
 
-    // assertEq(mockToken1.balanceOf(alice), 0);
-    // assertEq(mockToken2.balanceOf(alice), 0);
+    vm.stopPrank();
+
+    assertEq(mockToken1.balanceOf(alice), 0);
+    assertEq(mockToken2.balanceOf(alice), 0);
+    assertEq(lps, 4000);
+  }
+
+  function testaddLiquidityETH() public {
+    assertEq(mockToken1.balanceOf(alice), AMOUNT);
+    assertEq(mockToken2.balanceOf(alice), AMOUNT);
+
+
+    vm.startPrank(alice);
+
+    ERC20(address(mockToken1)).safeApprove(address(aerouter), AMOUNT);
+
+    (, , uint256 lps) = aerouter.addLiquidityETH{
+        value: 5000 wei }(
+        address(mockToken1), AMOUNT, 
+        0, 0, alice, type(uint256).max);
+    
+    vm.stopPrank();
+
+    assertEq(mockToken1.balanceOf(alice), 0);
+    assertEq(alice.balance, 0);
+    assertEq(lps, 4000);
   }
     
 

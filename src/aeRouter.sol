@@ -75,7 +75,7 @@ contract aeRouter is IaeRouter {
         );
         address pair = aeLibrary.pairFor(factory, tokenA, tokenB);
         ERC20(tokenA).transferFrom(msg.sender, pair, amountA);
-        ERC20(tokenB).safeTransferFrom(msg.sender, pair, amountB);
+        ERC20(tokenB).transferFrom(msg.sender, pair, amountB);
         liquidity = IaePair(pair).mint(to);
     }
 
@@ -98,9 +98,9 @@ contract aeRouter is IaeRouter {
             })
         );
         address pair = aeLibrary.pairFor(factory, token, WETH);
-        ERC20(token).safeTransferFrom(msg.sender, pair, amountToken);
+        ERC20(token).transferFrom(msg.sender, pair, amountToken);
         IWETH(WETH).deposit{value: amountETH}();
-        if (IWETH(WETH).transfer(pair, amountETH)) revert TransferFail(); 
+        if (!IWETH(WETH).transfer(pair, amountETH)) revert TransferFail(); 
         liquidity = IaePair(pair).mint(to);
         if (msg.value > amountETH) msg.sender.safeTransferETH(msg.value - amountETH); // refund dust eth, if any
     }

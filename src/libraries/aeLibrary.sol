@@ -24,7 +24,7 @@ library aeLibrary {
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1)),
-                hex'96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f' // init code hash
+                hex'896ef8cddea29f8b5d03aefe9b609c3f563f7bba2b5abfe78b7b020f3173e3e1' // init code hash
             )))));
     }
 
