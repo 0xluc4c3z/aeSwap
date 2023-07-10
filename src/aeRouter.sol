@@ -196,7 +196,7 @@ contract aeRouter is IaeRouter {
     ) external override ensure(deadline) returns (uint256[] memory amounts) {
         amounts = aeLibrary.getAmountsOut(factory, amountIn, path);
         if (amounts[amounts.length - 1] < amountOutMin) revert InsufficientOutputAmount();
-        ERC20(path[0]).safeTransferFrom(msg.sender, aeLibrary.pairFor(factory, path[0], path[1]), amounts[0]);
+        ERC20(path[0]).transferFrom(msg.sender, aeLibrary.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, to);
     }
 
@@ -209,7 +209,7 @@ contract aeRouter is IaeRouter {
     ) external override ensure(deadline) returns (uint256[] memory amounts) {
         amounts = aeLibrary.getAmountsIn(factory, amountOut, path);
         if (amounts[0] >amountInMax) revert ExcessiveInputAmount();
-        ERC20(path[0]).safeTransferFrom(msg.sender, aeLibrary.pairFor(factory, path[0], path[1]), amounts[0]);
+        ERC20(path[0]).transferFrom(msg.sender, aeLibrary.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, to);
     }
 
@@ -237,7 +237,7 @@ contract aeRouter is IaeRouter {
         if (path[path.length - 1] != WETH) revert InvalidPath();
         amounts = aeLibrary.getAmountsIn(factory, amountOut, path);
         if (amounts[0] > amountInMax) revert ExcessiveInputAmount();
-        ERC20(path[0]).safeTransferFrom(msg.sender, aeLibrary.pairFor(factory, path[0], path[1]), amounts[0]);
+        ERC20(path[0]).transferFrom(msg.sender, aeLibrary.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, address(this));
         IWETH(WETH).withdraw(amounts[amounts.length - 1]);
         to.safeTransferETH(amounts[amounts.length - 1]);
@@ -252,7 +252,7 @@ contract aeRouter is IaeRouter {
         if (path[path.length - 1] != WETH) revert InvalidPath();
         amounts = aeLibrary.getAmountsOut(factory, amountIn, path);
         if (amounts[amounts.length - 1] < amountOutMin) revert InsufficientOutputAmount();
-        ERC20(path[0]).safeTransferFrom(msg.sender, aeLibrary.pairFor(factory, path[0], path[1]), amounts[0]);
+        ERC20(path[0]).transferFrom(msg.sender, aeLibrary.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, address(this));
         IWETH(WETH).withdraw(amounts[amounts.length - 1]);
         to.safeTransferETH(amounts[amounts.length - 1]);
@@ -265,7 +265,7 @@ contract aeRouter is IaeRouter {
         ensure(deadline)
         returns (uint256[] memory amounts)
     {
-        if (path[path.length - 1] != WETH) revert InvalidPath();
+        if (path[0] != WETH) revert InvalidPath();
         amounts = aeLibrary.getAmountsIn(factory, amountOut, path);
         if (amounts[0] > msg.value) revert ExcessiveInputAmount();
         IWETH(WETH).deposit{value: amounts[0]}();

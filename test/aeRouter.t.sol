@@ -39,6 +39,7 @@ contract aeRouterTest is Test {
     mockToken2.transfer(alice, AMOUNT);
     mockToken1.transfer(bob, 3500);
     vm.deal(alice, 5000 wei);
+    vm.deal(bob, 3500 wei);
     vm.stopPrank();
   } 
 
@@ -64,7 +65,7 @@ contract aeRouterTest is Test {
     assertEq(lps, 4000);
   }
 
-  function testaddLiquidityETH() public {
+  function testAddLiquidityETH() public {
     assertEq(mockToken1.balanceOf(alice), AMOUNT);
     assertEq(mockToken2.balanceOf(alice), AMOUNT);
 
@@ -113,7 +114,7 @@ contract aeRouterTest is Test {
 
     address pair = pairFor(address(aefactory), address(mockToken1), address(weth));
 
-    testaddLiquidityETH();
+    testAddLiquidityETH();
 
     vm.startPrank(alice);
 
@@ -131,18 +132,121 @@ contract aeRouterTest is Test {
     assertEq(aePair(pair).balanceOf(alice), 0);
   }
 
-  // function testswapExactTokensForTokens() public {
+  function testSwapExactTokensForTokens() public {
 
-  //   testAddLiquidity();
+    testAddLiquidity();
 
-  //   vm.startPrank(bob);
+    vm.startPrank(bob);
 
-  //   mockToken1.approve(address(aerouter), 3500);
+    mockToken1.approve(address(aerouter), 3500);
 
-  //   aerouter.swapExactTokensForTokens(amountIn, amountOutMin, path, to, deadline);
+    address[] memory t = new address[](2);
+    t[0] = address(mockToken1);
+    t[1] = address(mockToken2); 
 
-  // }
+    aerouter.swapExactTokensForTokens(
+      3500, 0, 
+      t, 
+      bob, type(uint256).max);
 
+    assertEq(mockToken1.balanceOf(bob), 0);
+    assertEq(mockToken2.balanceOf(bob), 2055);
+  }
+
+  function testSwapTokensForExactTokens() public {
+
+    testAddLiquidity();
+
+    vm.startPrank(bob);
+
+    mockToken1.approve(address(aerouter), 3500);
+
+    address[] memory t = new address[](2);
+    t[0] = address(mockToken1);
+    t[1] = address(mockToken2); 
+
+    aerouter.swapTokensForExactTokens(
+      2055, 3500, 
+      t, 
+      bob, type(uint256).max);
+
+    assertEq(mockToken1.balanceOf(bob), 0);
+    assertEq(mockToken2.balanceOf(bob), 2055);
+  }
+
+  function testSwapExactETHForTokens() public {
+    
+    testAddLiquidityETH();
+
+    vm.startPrank(bob);
+
+    address[] memory t = new address[](2);
+    t[0] = address(weth);
+    t[1] = address(mockToken1);
+
+    aerouter.swapExactETHForTokens{ value: 3500 wei }(0, t, bob, type(uint256).max);
+
+    assertEq(bob.balance, 0);
+    assertEq(mockToken1.balanceOf(bob), 5555);
+  }
+
+  function testSwapTokensForExactETH() public {
+
+    testAddLiquidityETH();
+
+    assertEq(bob.balance, 3500 wei);
+
+    vm.startPrank(bob);
+
+    address[] memory t = new address[](2);
+    t[0] = address(mockToken1);
+    t[1] = address(weth);
+
+    mockToken1.approve(address(aerouter), 3500);
+
+    aerouter.swapTokensForExactETH(2055, 3500, t, bob, type(uint256).max);
+
+    assertEq(mockToken1.balanceOf(bob), 0);
+    assertEq(bob.balance, 5555 wei);
+  }
+
+
+  function testSwapExactTokensForETH() public {
+
+    testAddLiquidityETH();
+
+    vm.startPrank(bob);
+  
+    address[] memory t = new address[](2);
+    t[0] = address(mockToken1);
+    t[1] = address(weth);
+
+    mockToken1.approve(address(aerouter), 3500);
+
+    aerouter.swapExactTokensForETH(3500, 0, t, bob, type(uint256).max);
+
+    assertEq(mockToken1.balanceOf(bob), 0);
+    assertEq(bob.balance, 5555 wei);
+  }
+
+
+  function testSwapETHForExactTokens() public {
+
+    testAddLiquidityETH();
+
+    assertEq(mockToken1.balanceOf(bob), 3500);
+
+    vm.startPrank(bob);
+
+    address[] memory t = new address[](2);
+    t[0] = address(weth);
+    t[1] = address(mockToken1);
+
+    aerouter.swapETHForExactTokens{ value: 3500 wei }(2000, t, bob, type(uint256).max);
+
+    assertEq(bob.balance, 156);
+    assertEq(mockToken1.balanceOf(bob), 5500);
+  }
 
 
 
