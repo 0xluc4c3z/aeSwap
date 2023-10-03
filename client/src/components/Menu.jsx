@@ -7,6 +7,8 @@ import UsdtABI from '../web3/UsdtABI.json'
 
 import Logo from '../assets/logo.png';
 import Logo2 from '../assets/logo2.png';
+import Logo3 from '../assets/logo3.png';
+import Logo4 from '../assets/logo4.png';
 
 const DAIAddress = "0x9D233A907E065855D2A9c7d4B552ea27fB2E5a36"
 const USDTAddress = "0xe583769738b6dd4E7CAF8451050d1948BE717679"
@@ -63,12 +65,12 @@ export const Menu = ({ account, connected }) => {
               <div className="title">Swap</div>
               <div className="put-1">
                 <input type="number" className="in-1" placeholder="0.0"/>
-                <div className="coin1"><div className="c1"><img src={Logo} className="logos" />DAI</div></div>
+                <div className="coin1"><div className="c1"><img src={Logo3} className="logos" />DAI</div></div>
               </div>
               <div className="balance">Balance {balanceDAI}</div>
               <div className="put-1">
                 <input type="number" className="in-1" placeholder="0.0"/>
-                <div className="coin1"><div className="c1"><img src={Logo} className="logos" />USDT</div></div>
+                <div className="coin1"><div className="c1"><img src={Logo4} className="logos" />USDT</div></div>
               </div>
               <div className="balance">Balance {balanceUSDT}</div>
               <div className="btncon">

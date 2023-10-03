@@ -28,10 +28,10 @@ export const Header = ({ setAccount, setConnected, connected }) => {
           <a href="">charts</a>
         </nav>
         <div className="econnect">
-          <div className="eth"><img src={logo} className="logos" />Ethereum</div>
+          <div className="eth"><img src={logo} className="logos" />Goerli</div>
           {
             connected ? (
-              <label>Connected</label>
+              <label className="eth">Connected</label>
             ) : (
               <button className="wallet" onClick={connectAccount}>Connect Wallet</button>
             )
