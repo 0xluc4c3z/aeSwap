@@ -2,7 +2,10 @@
 
 Page: https://aestheticswap.vercel.app/
 
-Contract: 
+Contracts:
+- swapFactory: https://goerli.etherscan.io/address/0xe46f797d2eaaf96f3a8b8fcf82473b06ef9b42c0#code
+- swapRouter: https://goerli.etherscan.io/address/0xe6dffcb72444ba28a50cdd99d8b6437246b1b047#code
+- pairDaiUsdt: https://goerli.etherscan.io/address/0x930C0050d6427c457Dc30bD080e0eBf37ac53686
 
 (only functional in the goerli network)
 
