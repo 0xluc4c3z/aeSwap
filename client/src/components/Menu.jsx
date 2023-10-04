@@ -85,9 +85,27 @@ export const Menu = ({ account, connected }) => {
               </div>
             </div>
           ) : (
-            <div className="inconnect">
-              <img src={Logo2} className="logo-2" />
-              <p className="pwallet">Please connect your wallet</p>
+            <div>
+              <div className="title">Swap</div>
+              <div className="put-1">
+                <input type="number" className="in-1" placeholder="0.0" value={value1} onChange={e => setValue1(e.target.value)} />
+                <div className="coin1"><div className="c1"><img src={Logo3} className="logos" />DAI</div></div>
+              </div>
+              {/* <div className="balance">Your balance DAI: {balanceDAI}</div> */}
+              <div className="put-2">
+                <input type="number" className="in-1" placeholder="0.0" value={value1} onChange={e => setValue1(e.target.value)} />
+                <div className="coin1"><div className="c1"><img src={Logo4} className="logos" />USDT</div></div>
+              </div>
+              {/* <div className="balance">Your balance USDT: {balanceUSDT}</div> */}
+              <div className="btncon2">
+                {
+                  insBalance ? (
+                    <button className="btnconfirm">Confirm</button>
+                  ) : (
+                    <button className="btnconfirm2">Connect your wallet</button>
+                  )
+                }
+              </div>
             </div>
           )
         }

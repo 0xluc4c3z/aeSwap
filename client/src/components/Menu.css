@@ -108,3 +108,18 @@
 .logo-2{
   height: 230px;
 }
+
+
+.put-2{
+  display: flex;
+  background-color: #20242A;
+  width: 608px;
+  height: 70px;
+  margin-top: 45px;
+  padding: 16px;
+  border-radius: 1rem;
+}
+
+.btncon2{
+  margin-top: 53px;
+}
