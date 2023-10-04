@@ -23,6 +23,9 @@ export const Menu = ({ account, connected }) => {
 
   const[insBalance, setInsBalance] = useState(false);
 
+  const[value1, setValue1] = useState();
+  const[value2, setValue2] = useState();
+
   useEffect(() => {
     handleBalance();
   })
@@ -40,8 +43,6 @@ export const Menu = ({ account, connected }) => {
       UsdtABI,
       provider
     );
-
-    console.log(account[0])
     
     let balanceDAI = await contractDAI.balanceOf(account[0]);
     
@@ -64,21 +65,21 @@ export const Menu = ({ account, connected }) => {
             <div>
               <div className="title">Swap</div>
               <div className="put-1">
-                <input type="number" className="in-1" placeholder="0.0"/>
+                <input type="number" className="in-1" placeholder="0.0" value={value1} onChange={e => setValue1(e.target.value)} />
                 <div className="coin1"><div className="c1"><img src={Logo3} className="logos" />DAI</div></div>
               </div>
-              <div className="balance">Balance {balanceDAI}</div>
+              <div className="balance">Your balance DAI: {balanceDAI}</div>
               <div className="put-1">
-                <input type="number" className="in-1" placeholder="0.0"/>
+                <input type="number" className="in-1" placeholder="0.0" value={value1} onChange={e => setValue1(e.target.value)} />
                 <div className="coin1"><div className="c1"><img src={Logo4} className="logos" />USDT</div></div>
               </div>
-              <div className="balance">Balance {balanceUSDT}</div>
+              <div className="balance">Your balance USDT: {balanceUSDT}</div>
               <div className="btncon">
                 {
                   insBalance ? (
                     <button className="btnconfirm">Confirm</button>
                   ) : (
-                    <button className="btnconfirm2">Insufficient amount</button>
+                    <button className="btnconfirm2">Insufficient balance</button>
                   )
                 }
               </div>

@@ -33,7 +33,7 @@ export const Header = ({ setAccount, setConnected, connected }) => {
             connected ? (
               <label className="eth">Connected</label>
             ) : (
-              <button className="wallet" onClick={connectAccount}>Connect Wallet</button>
+              <button className="wallet" onClick={connectAccount}> Connect</button>
             )
           }
         </div>
